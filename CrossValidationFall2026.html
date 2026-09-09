@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Chris Mecklin">
+
+<title>Cross Validation Fall 2026</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="CrossValidationFall2026_files/libs/clipboard/clipboard.min.js"></script>
+<script src="CrossValidationFall2026_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="CrossValidationFall2026_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="CrossValidationFall2026_files/libs/quarto-html/popper.min.js"></script>
+<script src="CrossValidationFall2026_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="CrossValidationFall2026_files/libs/quarto-html/anchor.min.js"></script>
+<link href="CrossValidationFall2026_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="CrossValidationFall2026_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="CrossValidationFall2026_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="CrossValidationFall2026_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="CrossValidationFall2026_files/libs/bootstrap/bootstrap-efbb37e9afcc02144ebbc7afd12a776f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Cross Validation Fall 2026</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Chris Mecklin </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="cross-validation" class="level1">
+<h1>Cross-Validation</h1>
+<section id="validation-set-approach" class="level2">
+<h2 class="anchored" data-anchor-id="validation-set-approach">Validation Set Approach</h2>
+<p>When we build a “rule” to make predictions, whether we use a traditional approach like a linear model from the “data modeling” culture or an approach such as CART from the “algorithmic” culture, we wish to know if the rule we have will do a good job in predicting future outcomes. The <strong>validation set</strong> approach considers this problem by dividing a data set into two random pieces, typically (but not always) of the same size. One of this pieces is called the <strong>training set</strong> and is used to build a model or prediction rule, and the other piece is held out and used afterwords as the <strong>test set</strong> for validating the model. The hope is that your model/rule will accurately predict values from the test set, yielding a low <span class="math inline">\(MSE\)</span> (or a high accuracy/low error rate in the case of classification).</p>
+<p>For example, the R package <code>MASS</code> has two data sets called <code>Pima.tr</code> and <code>Pima.te</code> that we have already considered. It turns out that the complete data set, dealing with incidence of Type II diabetes among women on the Pima reservation, had <span class="math inline">\(n=532\)</span> cases, and <code>Pima.tr</code> is a random selected set of <span class="math inline">\(n=200\)</span> of these cases. The <code>Pima.te</code> set contains the remaining <span class="math inline">\(n=332\)</span> cases.</p>
+<p>We will use <code>Pima.tr</code> as the training set and <code>Pima.te</code> as the test set for the model <span class="math display">\[\text{bmi} \sim \text{age+bp+npreg}\]</span> where we try to predict the woman’s body mass index based on her age, her diastolic blood pressure, and the number of pregnancies that she has had. I’ll use linear regression and CART as a comparison of the two cultures; often in the machine learning world people will try many methods as accurate prediction is the main goal, with interpretation or statistical inference as lesser goals (or possibly not cared about at all).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(MASS)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(Pima.tr)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(Pima.te)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># build the linear regression "rule" with the training set</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>bmi.linreg <span class="ot">&lt;-</span> <span class="fu">lm</span>(bmi <span class="sc">~</span> age <span class="sc">+</span> bp <span class="sc">+</span> npreg,<span class="at">data=</span>Pima.tr)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(bmi.linreg)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = bmi ~ age + bp + npreg, data = Pima.tr)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-14.0049  -4.8014   0.1607   3.7931  15.0114 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) 22.89520    2.71260   8.440 6.94e-15 ***
+age          0.03807    0.05081   0.749   0.4546    
+bp           0.11847    0.04020   2.947   0.0036 ** 
+npreg       -0.06994    0.15755  -0.444   0.6576    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 5.99 on 196 degrees of freedom
+Multiple R-squared:  0.05973,   Adjusted R-squared:  0.04534 
+F-statistic:  4.15 on 3 and 196 DF,  p-value: 0.00704</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># use it to make predictions from the test set</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> Pima.te<span class="sc">$</span>bmi</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>yhat.linreg <span class="ot">&lt;-</span> <span class="fu">predict</span>(bmi.linreg,<span class="at">newdata=</span>Pima.te)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># compute the MSE</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(Pima.te)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>MSE.linreg <span class="ot">&lt;-</span> <span class="fu">sum</span>((y<span class="sc">-</span>yhat.linreg)<span class="sc">^</span><span class="dv">2</span>)<span class="sc">/</span>n</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>MSE.linreg</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 48.58372</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># build a regression tree (CART) using recursive partitioning</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(rpart)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(rpart.plot)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>bmi.cart <span class="ot">&lt;-</span> <span class="fu">rpart</span>(bmi <span class="sc">~</span> age <span class="sc">+</span> bp <span class="sc">+</span> npreg,<span class="at">data=</span>Pima.tr)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">rpart.plot</span>(bmi.cart)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="CrossValidationFall2026_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># use it to make predictions from the test set</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> Pima.te<span class="sc">$</span>bmi</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>yhat.cart <span class="ot">&lt;-</span> <span class="fu">predict</span>(bmi.cart,<span class="at">newdata=</span>Pima.te)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># compute the MSE</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>MSE.cart <span class="ot">&lt;-</span> <span class="fu">sum</span>((y<span class="sc">-</span>yhat.cart)<span class="sc">^</span><span class="dv">2</span>)<span class="sc">/</span>n</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>MSE.cart</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 47.01216</code></pre>
+</div>
+</div>
+<p>Notice the <span class="math inline">\(MSE=48.58372\)</span> when I used multiple linear regression, and it is <span class="math inline">\(MSE=47.01216\)</span> when I used a regression tree (CART). Since lower values of <span class="math inline">\(MSE\)</span> are preferred, the CART model seems a good choice.</p>
+<p>There are several flaws to this approach, including:</p>
+<ol type="1">
+<li><p>Maybe we don’t have enough data to be able to divide the data set into two pieces of a reasonable size.</p></li>
+<li><p>Statistical methods tend to “perform worse” (large residuals in regression, errors in classification, etc.) wih smaller data sets, and the validation set approach by definition reduces our sample size.</p></li>
+<li><p>There can be a lot of variance in our results based on what portion of the original data set is randomly allocated to the training set versus the test set.</p></li>
+</ol>
+</section>
+<section id="leave-one-out-cross-validation-loocv" class="level2">
+<h2 class="anchored" data-anchor-id="leave-one-out-cross-validation-loocv">Leave-One-Out Cross-Validation (LOOCV)</h2>
+<p>For the reasons given above, it is often desirable to avoid splitting our data set into two pieces and instead to use each of the cases in our data set in both the training (i.e.&nbsp;building the model or rule) and testing (i.e.&nbsp;making predictions, validating if these predictions are decent) portions. <strong>Cross-validation</strong> is an approach that tried to compute this error without needing to use precious data to form a validation set with a training set and separate testing set. Clever methodology for accomplishing this task dates back to the 1970s, and recent interest in computer-intensive prediction algorithms, including methods of machine learning, reawakened interest in cross-validation. As noted by Bradley Efron and Trevor Hastie:</p>
+<blockquote class="blockquote">
+<p>cross-valiation is a <em>strongly</em> frequentist procedure.</p>
+</blockquote>
+<p>An attractive approach, which will remind you of the <strong>jackknife</strong>, is the <strong>Leave-One-Out Cross-Validation (LOOCV)</strong> approach.</p>
+<p>In the LOOCV approach, each individual case takes its turn being the test set for model validation, with the other <span class="math inline">\(n-1\)</span> points serving as the training set. For example, if we leave out point <span class="math inline">\(i=1\)</span>, then the model/rule is built using points <span class="math inline">\(i=2,3,\cdots,n\)</span>. Then a prediction <span class="math inline">\(\hat{Y}_{(i)}\)</span> is made for point <span class="math inline">\(i\)</span> using that rule, and the mean square error <span class="math inline">\(MSE_i = (Y_i - \hat{Y}_{(i)})^2\)</span> is computed.</p>
+<p>This is repeated <span class="math inline">\(n\)</span> times, with every point taking its turn being “left out”. Once this is done, the LOOCV estimate of <span class="math inline">\(MSE\)</span> is computed as the average of all <span class="math inline">\(MSE_i\)</span>.</p>
+<p><span class="math display">\[CV_{(n)} = \frac{\sum_{i=1}^n MSE_I}{n}\]</span> An amazing fact is that for the special case of linear regression, this turns out to be no more computationally expensive than fitting a single regression model! It is possible to compute the cross-validation <span class="math inline">\(MSE\)</span> with the formula <span class="math display">\[CV_{n}=\frac{1}{n} \sum_{i=1}^n (\frac{Y_i-\hat{Y}_i}{1-hi})^2\]</span> where <span class="math inline">\(h_i\)</span> is the <strong>leverage</strong> of data point <span class="math inline">\(i\)</span> in the regression model, which can be computed with <span class="math display">\[h_i=\frac{1}{n} + \frac{(x_i-\bar{x})^2}{\sum_{j=1}^n (x_j -\bar{X})^2}\]</span> for simple linear regression. The leverage <span class="math inline">\(h_i\)</span> takes on a value from <span class="math inline">\(1/n\)</span> to 1, increasing as <span class="math inline">\(x_i\)</span> is further from <span class="math inline">\(\bar{x}\)</span>. These “high leverage” points have a greater impact on the estimated regression model and are thus weighted more heavily in computing the cross-validated <span class="math inline">\(MSE\)</span>. (do we want to find the theory and work through why this works?)</p>
+<p>For multiple regression, the leverages are computed with the matrix equation</p>
+<p><span class="math display">\[\textbf{H}=\textbf{X}(\textbf{X}^T \textbf{X})^{-1} \textbf{X}^T\]</span> where <span class="math display">\[\hat{\textbf{Y}} = \textbf{HY}\]</span></p>
+</section>
+<section id="k-fold-cross-validation-kfcv" class="level2">
+<h2 class="anchored" data-anchor-id="k-fold-cross-validation-kfcv"><span class="math inline">\(k\)</span>-Fold Cross-Validation (kFCV)</h2>
+<p>Unfortunately methods other than linear regression don’t lead to such a computationally convenient result, and thus LOOCV can be extremeley time-consuming, as we are forced to refit the model <span class="math inline">\(n\)</span> times. Thus, it is common to instead use what is known as <strong><span class="math inline">\(k\)</span>-fold cross-validation</strong>. In <span class="math inline">\(kFCV\)</span>, the data set is randomly divided into <span class="math inline">\(k\)</span> groups (“folds”) of approximately equal size. Let’s take <span class="math inline">\(k=10\)</span>, a very common choice for the number of folds.</p>
+<p>Instead of refitting the model <span class="math inline">\(n\)</span> times, we will refit the model <span class="math inline">\(k\)</span> times. The first time, we hold out the first fold (the “test” fold), fit/train the model with the other <span class="math inline">\(k-1\)</span> folds, and then use the test fold to make predictions and compute the MSE using all points in that fold. We repeat this, with each fold taking its turn as the “test” fold. Finally, an estimate of the <span class="math inline">\(MSE\)</span> is computed: <span class="math display">\[CV_{(k)} = \frac{1}{k} \sum_{i=1}^k MSE_i\]</span> In addition to less computational time, there is also a trade-ff between <strong>bias</strong> and <strong>variance</strong> which makes <span class="math inline">\(k\)</span>-fold <span class="math inline">\(CV\)</span> attractive.</p>
+<p>In the validation set approach, where we divide the data set into 2 roughly equal pieces (which is essentially <span class="math inline">\(k=2\)</span>-fold cross-validation), we will have bias since we will overestimate the <span class="math inline">\(MSE\)</span> or test error rate.</p>
+<p>Conversely, in leave-one-out cross-validation (which is <span class="math inline">\(n\)</span>-fold), we will have an approximately unbiased estimate of <span class="math inline">\(MSE\)</span> or test error rate, but at the price of very high variance.</p>
+<p>So, if we pick some value of <span class="math inline">\(k\)</span> between 2 and <span class="math inline">\(n\)</span>, we can lower this variance, at the price of some bias. Empirically, <span class="math inline">\(k=5\)</span> and <span class="math inline">\(k=10\)</span> have been found to be good choices.</p>
+</section>
+<section id="cross-validation-for-classification-problems" class="level2">
+<h2 class="anchored" data-anchor-id="cross-validation-for-classification-problems">Cross-Validation for Classification Problems</h2>
+<p>When we have a classification problem (i.e.&nbsp;the response variable <span class="math inline">\(Y\)</span> is categorical), then instead of computing a cross-validation estimate of <span class="math inline">\(MSE\)</span>, we instead will compute a estimate of the error rate (i.e.&nbsp;how often values are misclassified). For LOOCV, we get</p>
+<p><span class="math display">\[CV_{(n)} = \frac{1}{n} \sum_{i=1}^n Err_i\]</span> where <span class="math display">\[Err_i = I(y_i \neq \hat{y}_i)\]</span> Basically, the indicator function is used to set <span class="math inline">\(Err_i\)</span> equal to 1 when the point is misclassified and equal to 0 when it is correctly classified. The same idea is used if you use <span class="math inline">\(k\)</span>-fold <span class="math inline">\(CV\)</span> instead.</p>
+</section>
+<section id="confusion-matrix-metrics" class="level2">
+<h2 class="anchored" data-anchor-id="confusion-matrix-metrics">Confusion Matrix Metrics</h2>
+<p>In the special case of a binary response variable (such as either having or not having Type II diabetes), a <span class="math inline">\(2 \times 2\)</span> <strong>confusion matrix</strong> which tabulates the actual values of the binary response variable <span class="math inline">\(Y\)</span> with the classifications <span class="math inline">\(\hat{Y}\)</span> from the training rule is obtained. Many different statistics can be computed from a confusion matrix.</p>
+<p>An example is given below, where the confusion matrix is computed for a logistic regression model that predicts whether a patient has or doesn’t have Type II diabetes, using the <code>Pima.tr</code> data set for training and <code>Pima.te</code> for testing (i.e.&nbsp;the validation set or <span class="math inline">\(2\)</span>-fold approach.)</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(tidyverse)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(MASS)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>diabetes.model <span class="ot">&lt;-</span> <span class="fu">glm</span>(type<span class="sc">~</span>.,<span class="at">data=</span>Pima.tr,<span class="at">family=</span><span class="fu">binomial</span>(<span class="at">link=</span><span class="st">"logit"</span>))</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>yprob <span class="ot">&lt;-</span> <span class="fu">predict</span>(diabetes.model,<span class="at">newdata=</span>Pima.te,<span class="at">type=</span><span class="st">"response"</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>yhat <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">ifelse</span>(yprob<span class="sc">&gt;</span><span class="fl">0.5</span>,<span class="st">"Yes"</span>,<span class="st">"No"</span>))</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> Pima.te<span class="sc">$</span>type</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>caret<span class="sc">::</span><span class="fu">confusionMatrix</span>(yhat,y)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion Matrix and Statistics
+
+          Reference
+Prediction  No Yes
+       No  200  43
+       Yes  23  66
+                                          
+               Accuracy : 0.8012          
+                 95% CI : (0.7542, 0.8428)
+    No Information Rate : 0.6717          
+    P-Value [Acc &gt; NIR] : 1.116e-07       
+                                          
+                  Kappa : 0.5271          
+                                          
+ Mcnemar's Test P-Value : 0.01935         
+                                          
+            Sensitivity : 0.8969          
+            Specificity : 0.6055          
+         Pos Pred Value : 0.8230          
+         Neg Pred Value : 0.7416          
+             Prevalence : 0.6717          
+         Detection Rate : 0.6024          
+   Detection Prevalence : 0.7319          
+      Balanced Accuracy : 0.7512          
+                                          
+       'Positive' Class : No              
+                                          </code></pre>
+</div>
+</div>
+<p>The accuracy is merely the proportion of correct classifications, which is the sum of the main diagonal divided by the total sample size.</p>
+<p>Here <span class="math display">\[Accuracy = \frac{TN+TP}{TN+TP+FN+FP}=\frac{200+66}{200+66+43+23}=\frac{266}{332}=0.8012\]</span> where <span class="math inline">\(TN\)</span> is true negatives (the upper left hand corner in this table), <span class="math inline">\(TP\)</span> is true positives (lower right hand corner), <span class="math inline">\(FN\)</span> is false negatives (upper right), and <span class="math inline">\(FP\)</span> is false positives (lower left). The <code>confusionMatrix</code> functon in the <code>caret</code> package orients the confusion matrix with the predictions as rows and actual truth as columns–you will often see this reversed, along with the Yes/Positive and No/Negative reversed, so be cautious!</p>
+<p>The error rate is of course just <span class="math inline">\(1-Accuracy\)</span>, so it is 0.1988 in this matrix.</p>
+<p>Cohen’s Kappa is a common statistic in the social sciences for measuring inter-rater reliability between two raters, and is used here with one “rater” being the training rule and the other “rater” being the actual truth.</p>
+<p><span class="math display">\[\kappa = \frac{p_o-p_e}{1-p_e}\]</span> where <span class="math inline">\(p_o\)</span> is the observed agreement between the training rule and truth (we called it Accuracy) and <span class="math inline">\(p_e\)</span> is the expected agreement due to random chance.</p>
+<p>In this problem, <span class="math inline">\(p_o = 0.8012\)</span> and <span class="math display">\[p_e = p_{No} + p_{Yes}\]</span> <span class="math display">\[p_{No}=\frac{TN+FN}{n} \times \frac{TN+FP}{n} = \frac{243}{332} \times \frac{223}{332}=0.4916\]</span> <span class="math display">\[p_{Yes}= \frac{TP+FP}{n} \times {TP+FN}{n} = \frac{89}{332} \times{109}{332} = 0.0880\]</span></p>
+<p><span class="math display">\[p_e = 0.4916 + 0.0880 = 0.5796\]</span></p>
+<p><span class="math display">\[\kappa = \frac{.8012-.5796}{1-.5796} = 0.5271\]</span></p>
+<p>I’ll let you read about the other measures given here if interested.</p>
+<p><a href="https://www.dataschool.io/simple-guide-to-confusion-matrix-terminology/" class="uri">https://www.dataschool.io/simple-guide-to-confusion-matrix-terminology/</a></p>
+</section>
+<section id="receiver-operating-characteristic-curve" class="level2">
+<h2 class="anchored" data-anchor-id="receiver-operating-characteristic-curve">Receiver Operating Characteristic Curve</h2>
+<p>In the words of Ben Baumer, Danny Kaplan, and Nick Horton:</p>
+<blockquote class="blockquote">
+<p>a more principled approach to assessing the quality of a classifier is a <em>receiver operating characteristic</em> (<span class="math inline">\(ROC\)</span>) curve. This consiers all possible thresholds for rounding, and graphically displays the trade-off between <em>sensitivity</em> (the true positive rate) and <em>specificity</em> (the true negative rate). What is actually plotted is the true positive rate as a function of the false positive rate.</p>
+</blockquote>
+<p>The area under the <span class="math inline">\(ROC\)</span> curve, <span class="math inline">\(AUC\)</span> represents a probability that the model/classifier, if give a random positive example (in this example, someone with diabetes) and a random negative example (someone without diabetes), will rank the positive example higher than the negative example. <span class="math inline">\(AUC=1\)</span> represents perfect classification, with <span class="math inline">\(AUC=0.5\)</span> chance-level classification.</p>
+<p>I am using the <code>performance</code> package to compute and graph the <span class="math inline">\(ROC\)</span> curve and <span class="math inline">\(AUC\)</span> of our logistic regression model. This can be done with many other packages.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># maybe replace with yardstick package, roc_curve and roc_auc</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># that is in Chapter 10 of Modern Data Science With R</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># https://mdsr-book.github.io/mdsr3e/10-modeling.html</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(performance)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(see)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">performance_roc</span>(diabetes.model)) <span class="co">#ROC curve</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="CrossValidationFall2026_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">performance_accuracy</span>(diabetes.model) <span class="co">#AUC</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># Accuracy of Model Predictions
+
+Accuracy (95% CI): 82.19% [70.30%, 89.86%]
+Method: Area under Curve</code></pre>
+</div>
+</div>
+</section>
+<section id="the-caret-package" class="level2">
+<h2 class="anchored" data-anchor-id="the-caret-package">The <code>caret</code> Package</h2>
+<p>Max Kuhn’s <code>caret</code> package (classification and regression training) package also gives us the ability to compare literally dozens of methods from both classical statistics and machine learning via <span class="math inline">\(LOOCV\)</span> or <span class="math inline">\(k\)</span>-fold cross-validation. I frankly don’t know and have never implemented most of these methods.</p>
+<p>Here’s his book on it.</p>
+<p><a href="https://topepo.github.io/caret/index.html" class="uri">https://topepo.github.io/caret/index.html</a></p>
+<p>I’m going to use his package to show how to implement cross-validation in both a regression (continuous response) and classification (categorical response) setting.</p>
+<p>With a continuous response, the most common measure of prediction error is the <em>root-mean-square-error</em> or <span class="math inline">\(RMSE\)</span>.</p>
+<p><span class="math display">\[RMSE(y,\hat{y}) = \sqrt{\frac{1}{n}\sum_{i=1}^n (y-\hat{y})^2}\]</span></p>
+<p>Another common measure is <em>mean absolute error</em> <span class="math inline">\(MAE\)</span> which will not penalize large residuals (“misses”) as heavily since an absolute value is used in place of the squared term.</p>
+<p><span class="math display">\[MAE(y,\hat{y}) = \sqrt{\frac{1}{n}\sum_{i=1}^n |y-\hat{y}|}\]</span></p>
+<p>The coefficient of determination, <span class="math inline">\(R^2\)</span> is the proportion of variability in the outcome explained by the model. When fitting a linear regression model, this is just the ratio of the sum of squares regression to the sum of squares total. <span class="math inline">\(R^2\)</span> will be on the scale <span class="math inline">\([0,1]\)</span> with <span class="math inline">\(R^2=1\)</span> meaning a perfect match between <span class="math inline">\(y\)</span> and <span class="math inline">\(\hat{y}\)</span>.</p>
+<p>The <code>kernlab</code> package is just for the <code>spam</code> data set from the books, as the <code>ElemStatLearn</code> package is no longer available on CRAN.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(tidyverse)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(MASS)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(caret)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Regression Setting, compare multiple linear regression (lm) with CART (rpart)</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="do">## use complete Pima data set Pima.tr2</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="co"># set up Leave-One-Out CV </span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>train_controlLOOCV <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method=</span><span class="st">"LOOCV"</span>, </span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">classProbs=</span><span class="cn">FALSE</span>)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co"># train the model using linear regression</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>model.linreg <span class="ot">&lt;-</span> <span class="fu">train</span>(bmi<span class="sc">~</span>.,</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data=</span><span class="fu">na.omit</span>(Pima.tr2),</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>                    <span class="at">trControl=</span>train_controlLOOCV,</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>                    <span class="at">method=</span><span class="st">"lm"</span>)</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(model.linreg)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Linear Regression 
+
+200 samples
+  7 predictor
+
+No pre-processing
+Resampling: Leave-One-Out Cross-Validation 
+Summary of sample sizes: 199, 199, 199, 199, 199, 199, ... 
+Resampling results:
+
+  RMSE      Rsquared   MAE     
+  4.765348  0.3999993  3.595549
+
+Tuning parameter 'intercept' was held constant at a value of TRUE</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># train the model using cart</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>model.cart <span class="ot">&lt;-</span> <span class="fu">train</span>(bmi<span class="sc">~</span>.,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data=</span><span class="fu">na.omit</span>(Pima.tr2),</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>                    <span class="at">trControl=</span>train_controlLOOCV,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">method=</span><span class="st">"rpart"</span>)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(model.cart) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>CART 
+
+200 samples
+  7 predictor
+
+No pre-processing
+Resampling: Leave-One-Out Cross-Validation 
+Summary of sample sizes: 199, 199, 199, 199, 199, 199, ... 
+Resampling results across tuning parameters:
+
+  cp          RMSE      Rsquared     MAE     
+  0.03557495  4.705115  0.415485233  3.790701
+  0.09024525  5.187052  0.296088970  4.312051
+  0.41267800  6.654030  0.002905366  5.898693
+
+RMSE was used to select the optimal model using the smallest value.
+The final value used for the model was cp = 0.03557495.</code></pre>
+</div>
+</div>
+<p>When I used Leave-One_Out cross-validation comparing linear regression and CART, the results are very similar. Since we would wish to minimize <code>RMSE</code>, the slightly lower value for the CART model is desirable, although you then get to dig into what the <code>cp</code> (model complexity) tuning parameter means. If you like <span class="math inline">\(R^2\)</span> better, it’s slightly higher (more desirable) with CART than linear regression.</p>
+<p>Let’s try for a classification problem, comparing logistic regression and CART for the <code>spam</code> vs <code>ham</code> example (i.e.&nbsp;is an email legitimate or spam)?</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(tidyverse)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(kernlab) <span class="co">#  just for the spam data set</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(caret)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="do">## Classification setting, compare logistic regression (glm) with CART (rpart)</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="do">## use complete Pima data set spam</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co"># set up k-folds with k=10</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>train_controlKFCV <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method=</span><span class="st">"cv"</span>, </span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">number=</span><span class="dv">10</span>,</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">classProbs=</span><span class="cn">TRUE</span>)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="co"># train the model using linear regression</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(spam)</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>model.logreg <span class="ot">&lt;-</span> <span class="fu">train</span>(type<span class="sc">~</span>.,</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data=</span>spam,</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>                    <span class="at">trControl=</span>train_controlKFCV,</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>                    <span class="at">method=</span><span class="st">"glm"</span>)</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(model.logreg)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Generalized Linear Model 
+
+4601 samples
+  57 predictor
+   2 classes: 'nonspam', 'spam' 
+
+No pre-processing
+Resampling: Cross-Validated (10 fold) 
+Summary of sample sizes: 4141, 4141, 4140, 4142, 4141, 4141, ... 
+Resampling results:
+
+  Accuracy   Kappa    
+  0.9271908  0.8463901</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># train the model using cart</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>model.cart <span class="ot">&lt;-</span> <span class="fu">train</span>(type<span class="sc">~</span>.,</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data=</span>spam,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                    <span class="at">trControl=</span>train_controlKFCV,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">method=</span><span class="st">"rpart"</span>)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(model.cart) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>CART 
+
+4601 samples
+  57 predictor
+   2 classes: 'nonspam', 'spam' 
+
+No pre-processing
+Resampling: Cross-Validated (10 fold) 
+Summary of sample sizes: 4140, 4141, 4141, 4140, 4141, 4142, ... 
+Resampling results across tuning parameters:
+
+  cp          Accuracy   Kappa    
+  0.04302261  0.8539463  0.6887044
+  0.14892443  0.7909395  0.5494575
+  0.47655819  0.6898740  0.2516978
+
+Accuracy was used to select the optimal model using the largest value.
+The final value used for the model was cp = 0.04302261.</code></pre>
+</div>
+</div>
+<p>This time, the data modeling approach (logistic regression, a type of generalized linear model) outdid CART, as both <code>Accuracy</code> and <code>Kappa</code> are statistics that we wish to maximize.</p>
+</section>
+<section id="resources" class="level2">
+<h2 class="anchored" data-anchor-id="resources">Resources</h2>
+<ul>
+<li><p>Baumer, B, Kaplan, D., &amp; Horton, N. (2024) Modern data science with R (3rd edition). Chapman Hall/CRC Press. Available at <a href="https://mdsr-book.github.io/mdsr3e/" class="uri">https://mdsr-book.github.io/mdsr3e/</a></p></li>
+<li><p>Efron, B., &amp; Hastie, T. (2016). Computer age statistical inference. Cambridge University Press. (Look up on Google Scholar for a link to the book)</p></li>
+<li><p>Frick, H., Chow, F., Kuhn, M., Mahoney, M., Silge, J., &amp; Wickham, H. (2026). <em><code>rsample</code>: General Resampling Infrastructure</em>. doi:10.32614/CRAN.package.rsample <a href="https://doi.org/10.32614/CRAN.package.rsample" class="uri">https://doi.org/10.32614/CRAN.package.rsample</a>, R package version 1.3.2, <a href="https://CRAN.R-project.org/package=rsample" class="uri">https://CRAN.R-project.org/package=rsample</a>.</p></li>
+<li><p>Gelman, A., Hill, J., &amp; Vehtari, A. (2021). Regression and other stories. Cambridge University Press.</p></li>
+<li><p>James, G., Witten, D., Hastie, T., &amp; Tibshirani, R. (2021). An introduction to statistical learning with applications in R (2nd edition). Springer. Available at <a href="https://www.statlearning.com/" class="uri">https://www.statlearning.com/</a>.</p></li>
+<li><p>Kuhn, M. (2008). Building Predictive Models in R Using the <code>caret</code> Package. Journal of Statistical Software, 28(5), 1–26. <a href="https://doi.org/10.18637/jss.v028.i05" class="uri">https://doi.org/10.18637/jss.v028.i05</a>.</p></li>
+</ul>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
