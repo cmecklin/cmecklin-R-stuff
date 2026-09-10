@@ -49,7 +49,7 @@ There are several flaws to this approach, including:
 
 1. Maybe we don't have enough data to be able to divide the data set into two pieces of a reasonable size.
 
-2. Statistical methods tend to "perform worse" (large residuals in regression, errors in classification, etc.) wih smaller data sets, and the validation set approach by definition reduces our sample size.
+2. Statistical methods tend to "perform worse" (large residuals in regression, errors in classification, etc.) with smaller data sets, and the validation set approach by definition reduces our sample size.
 
 3. There can be a lot of variance in our results based on what portion of the original data set is randomly allocated to the training set versus the test set.
 
@@ -67,12 +67,12 @@ This is repeated $n$ times, with every point taking its turn being "left out".  
 
 $$CV_{(n)} = \frac{\sum_{i=1}^n MSE_I}{n}$$
 An amazing fact is that for the special case of linear regression, this turns out to be no more computationally expensive than fitting a single regression model! It is possible to compute the cross-validation $MSE$ with the formula $$CV_{n}=\frac{1}{n} \sum_{i=1}^n (\frac{Y_i-\hat{Y}_i}{1-hi})^2$$
-where $h_i$ is the **leverage** of data point $i$ in the regression model, which can be computed with $$h_i=\frac{1}{n} + \frac{(x_i-\bar{x})^2}{\sum_{j=1}^n (x_j -\bar{X})^2}$$ for simple linear regression.  The leverage $h_i$ takes on a value from $1/n$ to 1, increasing as $x_i$ is further from $\bar{x}$.  These "high leverage" points have a greater impact on the estimated regression model and are thus weighted more heavily in computing the cross-validated $MSE$.  (do we want to find the theory and work through why this works?)
+where $h_i$ is the **leverage** of data point $i$ in the regression model, which can be computed with $$h_i=\frac{1}{n} + \frac{(x_i-\bar{x})^2}{\sum_{j=1}^n (x_j -\bar{X})^2}$$ for simple linear regression.  The leverage $h_i$ takes on a value from $1/n$ to 1, increasing as $x_i$ is further from $\bar{x}$.  These "high leverage" points have a greater impact on the estimated regression model and are thus weighted more heavily in computing the cross-validated $MSE$.  
 
 For multiple regression, the leverages are computed with the matrix equation 
 
 $$\textbf{H}=\textbf{X}(\textbf{X}^T \textbf{X})^{-1} \textbf{X}^T$$ where $$\hat{\textbf{Y}} = \textbf{HY}$$
-
+More detail on how this "works" for linear models is found in Section 4.2, Appendix A.5, and Appendix B.4 of Myers (1990), which includes discussion of PRESS residuals, the PRESS statistic (where PRESS stands for prediction sum of squares), and a result called the Sherman-Morrison-Woodbury Theorem that I haven't thought about since I was in grad school. That theorem involves how to compute the inverse of an "updated" matrix, where in the situation of leave-one-out cross-validation would involve the removal of the ith row of the matrix $\textbf{X}^T \textbf{X}$. 
 
 ## $k$-Fold Cross-Validation (kFCV)
 
@@ -261,5 +261,7 @@ This time, the data modeling approach (logistic regression, a type of generalize
 
 * Kuhn, M. (2008). Building Predictive Models in R Using the `caret` Package. Journal of
   Statistical Software, 28(5), 1–26. <https://doi.org/10.18637/jss.v028.i05>.
+  
+* Myers, R. (1990). Classical and modern regression with applications (2nd edition). Duxbury. (this is one of my grad school textbooks, with the theory for why cross-validation for linear models is related to the leverage statistics)
   
 

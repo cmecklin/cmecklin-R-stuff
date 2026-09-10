@@ -210,7 +210,7 @@ F-statistic:  4.15 on 3 and 196 DF,  p-value: 0.00704</code></pre>
 <p>There are several flaws to this approach, including:</p>
 <ol type="1">
 <li><p>Maybe we don’t have enough data to be able to divide the data set into two pieces of a reasonable size.</p></li>
-<li><p>Statistical methods tend to “perform worse” (large residuals in regression, errors in classification, etc.) wih smaller data sets, and the validation set approach by definition reduces our sample size.</p></li>
+<li><p>Statistical methods tend to “perform worse” (large residuals in regression, errors in classification, etc.) with smaller data sets, and the validation set approach by definition reduces our sample size.</p></li>
 <li><p>There can be a lot of variance in our results based on what portion of the original data set is randomly allocated to the training set versus the test set.</p></li>
 </ol>
 </section>
@@ -223,9 +223,9 @@ F-statistic:  4.15 on 3 and 196 DF,  p-value: 0.00704</code></pre>
 <p>An attractive approach, which will remind you of the <strong>jackknife</strong>, is the <strong>Leave-One-Out Cross-Validation (LOOCV)</strong> approach.</p>
 <p>In the LOOCV approach, each individual case takes its turn being the test set for model validation, with the other <span class="math inline">\(n-1\)</span> points serving as the training set. For example, if we leave out point <span class="math inline">\(i=1\)</span>, then the model/rule is built using points <span class="math inline">\(i=2,3,\cdots,n\)</span>. Then a prediction <span class="math inline">\(\hat{Y}_{(i)}\)</span> is made for point <span class="math inline">\(i\)</span> using that rule, and the mean square error <span class="math inline">\(MSE_i = (Y_i - \hat{Y}_{(i)})^2\)</span> is computed.</p>
 <p>This is repeated <span class="math inline">\(n\)</span> times, with every point taking its turn being “left out”. Once this is done, the LOOCV estimate of <span class="math inline">\(MSE\)</span> is computed as the average of all <span class="math inline">\(MSE_i\)</span>.</p>
-<p><span class="math display">\[CV_{(n)} = \frac{\sum_{i=1}^n MSE_I}{n}\]</span> An amazing fact is that for the special case of linear regression, this turns out to be no more computationally expensive than fitting a single regression model! It is possible to compute the cross-validation <span class="math inline">\(MSE\)</span> with the formula <span class="math display">\[CV_{n}=\frac{1}{n} \sum_{i=1}^n (\frac{Y_i-\hat{Y}_i}{1-hi})^2\]</span> where <span class="math inline">\(h_i\)</span> is the <strong>leverage</strong> of data point <span class="math inline">\(i\)</span> in the regression model, which can be computed with <span class="math display">\[h_i=\frac{1}{n} + \frac{(x_i-\bar{x})^2}{\sum_{j=1}^n (x_j -\bar{X})^2}\]</span> for simple linear regression. The leverage <span class="math inline">\(h_i\)</span> takes on a value from <span class="math inline">\(1/n\)</span> to 1, increasing as <span class="math inline">\(x_i\)</span> is further from <span class="math inline">\(\bar{x}\)</span>. These “high leverage” points have a greater impact on the estimated regression model and are thus weighted more heavily in computing the cross-validated <span class="math inline">\(MSE\)</span>. (do we want to find the theory and work through why this works?)</p>
+<p><span class="math display">\[CV_{(n)} = \frac{\sum_{i=1}^n MSE_I}{n}\]</span> An amazing fact is that for the special case of linear regression, this turns out to be no more computationally expensive than fitting a single regression model! It is possible to compute the cross-validation <span class="math inline">\(MSE\)</span> with the formula <span class="math display">\[CV_{n}=\frac{1}{n} \sum_{i=1}^n (\frac{Y_i-\hat{Y}_i}{1-hi})^2\]</span> where <span class="math inline">\(h_i\)</span> is the <strong>leverage</strong> of data point <span class="math inline">\(i\)</span> in the regression model, which can be computed with <span class="math display">\[h_i=\frac{1}{n} + \frac{(x_i-\bar{x})^2}{\sum_{j=1}^n (x_j -\bar{X})^2}\]</span> for simple linear regression. The leverage <span class="math inline">\(h_i\)</span> takes on a value from <span class="math inline">\(1/n\)</span> to 1, increasing as <span class="math inline">\(x_i\)</span> is further from <span class="math inline">\(\bar{x}\)</span>. These “high leverage” points have a greater impact on the estimated regression model and are thus weighted more heavily in computing the cross-validated <span class="math inline">\(MSE\)</span>.</p>
 <p>For multiple regression, the leverages are computed with the matrix equation</p>
-<p><span class="math display">\[\textbf{H}=\textbf{X}(\textbf{X}^T \textbf{X})^{-1} \textbf{X}^T\]</span> where <span class="math display">\[\hat{\textbf{Y}} = \textbf{HY}\]</span></p>
+<p><span class="math display">\[\textbf{H}=\textbf{X}(\textbf{X}^T \textbf{X})^{-1} \textbf{X}^T\]</span> where <span class="math display">\[\hat{\textbf{Y}} = \textbf{HY}\]</span> More detail on how this “works” for linear models is found in Section 4.2, Appendix A.5, and Appendix B.4 of Myers (1990), which includes discussion of PRESS residuals, the PRESS statistic (where PRESS stands for prediction sum of squares), and a result called the Sherman-Morrison-Woodbury Theorem that I haven’t thought about since I was in grad school. That theorem involves how to compute the inverse of an “updated” matrix, where in the situation of leave-one-out cross-validation would involve the removal of the ith row of the matrix <span class="math inline">\(\textbf{X}^T \textbf{X}\)</span>.</p>
 </section>
 <section id="k-fold-cross-validation-kfcv" class="level2">
 <h2 class="anchored" data-anchor-id="k-fold-cross-validation-kfcv"><span class="math inline">\(k\)</span>-Fold Cross-Validation (kFCV)</h2>
@@ -319,7 +319,7 @@ Prediction  No Yes
 <div class="cell-output cell-output-stdout">
 <pre><code># Accuracy of Model Predictions
 
-Accuracy (95% CI): 82.19% [70.30%, 89.86%]
+Accuracy (95% CI): 83.27% [74.19%, 89.23%]
 Method: Area under Curve</code></pre>
 </div>
 </div>
@@ -428,11 +428,11 @@ The final value used for the model was cp = 0.03557495.</code></pre>
 
 No pre-processing
 Resampling: Cross-Validated (10 fold) 
-Summary of sample sizes: 4141, 4141, 4140, 4142, 4141, 4141, ... 
+Summary of sample sizes: 4142, 4141, 4140, 4141, 4140, 4141, ... 
 Resampling results:
 
-  Accuracy   Kappa    
-  0.9271908  0.8463901</code></pre>
+  Accuracy  Kappa    
+  0.924143  0.8400928</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># train the model using cart</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>model.cart <span class="ot">&lt;-</span> <span class="fu">train</span>(type<span class="sc">~</span>.,</span>
@@ -450,13 +450,13 @@ Resampling results:
 
 No pre-processing
 Resampling: Cross-Validated (10 fold) 
-Summary of sample sizes: 4140, 4141, 4141, 4140, 4141, 4142, ... 
+Summary of sample sizes: 4141, 4141, 4141, 4140, 4141, 4141, ... 
 Resampling results across tuning parameters:
 
   cp          Accuracy   Kappa    
-  0.04302261  0.8539463  0.6887044
-  0.14892443  0.7909395  0.5494575
-  0.47655819  0.6898740  0.2516978
+  0.04302261  0.8572115  0.6954561
+  0.14892443  0.7856972  0.5464773
+  0.47655819  0.6713904  0.2004549
 
 Accuracy was used to select the optimal model using the largest value.
 The final value used for the model was cp = 0.04302261.</code></pre>
@@ -473,6 +473,7 @@ The final value used for the model was cp = 0.04302261.</code></pre>
 <li><p>Gelman, A., Hill, J., &amp; Vehtari, A. (2021). Regression and other stories. Cambridge University Press.</p></li>
 <li><p>James, G., Witten, D., Hastie, T., &amp; Tibshirani, R. (2021). An introduction to statistical learning with applications in R (2nd edition). Springer. Available at <a href="https://www.statlearning.com/" class="uri">https://www.statlearning.com/</a>.</p></li>
 <li><p>Kuhn, M. (2008). Building Predictive Models in R Using the <code>caret</code> Package. Journal of Statistical Software, 28(5), 1–26. <a href="https://doi.org/10.18637/jss.v028.i05" class="uri">https://doi.org/10.18637/jss.v028.i05</a>.</p></li>
+<li><p>Myers, R. (1990). Classical and modern regression with applications (2nd edition). Duxbury. (this is one of my grad school textbooks, with the theory for why cross-validation for linear models is related to the leverage statistics)</p></li>
 </ul>
 </section>
 </section>
