@@ -30,6 +30,7 @@ n <- nrow(Pima.te)
 MSE.linreg <- sum((y-yhat.linreg)^2)/n
 MSE.linreg
 
+MSE.linreg
 # build a regression tree (CART) using recursive partitioning
 require(rpart)
 require(rpart.plot)
